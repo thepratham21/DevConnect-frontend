@@ -1,22 +1,32 @@
 import axios from 'axios';
 import React, { useState } from 'react'
+import { useDispatch } from 'react-redux';
+import { addUser } from '../utils/userSlice';
+import { useNavigate } from 'react-router-dom';
+import { BASE_URL } from '../utils/constants';
 
 const Login = () => {
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [email, setEmail] = useState("shraddha@gmail.com");
+    const [password, setPassword] = useState("shraddha@123");
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const handleLogin = async () => {
-        try{
-            const res = await axios.post("http://localhost:7000/login", {
-            email,
-            password,
-        },
-        {
-            withCredentials:true
-        }
-    );
-        }catch(err){
+        
+        try {
+            const res = await axios.post(BASE_URL + "/login", {
+                email,
+                password,
+            },
+                {
+                    withCredentials: true
+                }
+            );
+            dispatch(addUser(res.data));
+            return navigate("/");
+
+        } catch (err) {
             console.error(err);
         }
     }
@@ -41,7 +51,7 @@ const Login = () => {
                                 <input
                                     type="email"
                                     value={email}
-                                    onChange={(e) => setEmail (e.target.value)}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     placeholder="Enter your email"
                                     className="input bg-black border border-white/20 text-white placeholder-gray-400 focus:border-white/40 focus:outline-none transition-all duration-200"
                                 />
@@ -74,7 +84,7 @@ const Login = () => {
                             <button className="btn btn-primary w-full bg-white text-black hover:bg-white/90 border-none font-semibold" onClick={handleLogin}>
                                 Login
                             </button>
-                            
+
                         </div>
                     </div>
                 </div>
