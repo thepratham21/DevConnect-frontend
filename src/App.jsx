@@ -5,6 +5,7 @@ import Login from "./components/Login"
 
 import appStore from "./utils/appstore"
 import Feed from "./components/Feed"
+import Profile from "./components/Profile"
 
 
 
@@ -20,6 +21,7 @@ function App() {
 
               <Route path="/" element={<Feed/>}></Route>
               <Route path="/login" element={<Login />}></Route>
+              <Route path="/profile" element={<Profile />}></Route>
 
 
             </Route>

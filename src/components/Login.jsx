@@ -11,6 +11,7 @@ const Login = () => {
     const [password, setPassword] = useState("shraddha@123");
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const [error, setError] = useState(null);
 
     const handleLogin = async () => {
         
@@ -27,7 +28,7 @@ const Login = () => {
             return navigate("/");
 
         } catch (err) {
-            console.error(err);
+            setError(err?.response?.data);
         }
     }
 
@@ -71,6 +72,8 @@ const Login = () => {
                                 />
                             </div>
                         </div>
+
+                        <p className='text-red-500'>{error}</p>
 
                         {/* Forgot password */}
                         <div className="text-right mt-2">
