@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useEffect } from "react";
 import UserCard from "./UserCard";
-import MyCard from "./MyCard";
+
 import axios from "axios";
 import { BASE_URL } from '../utils/constants'
 import { useDispatch } from "react-redux";
+import { addUser } from "../utils/userSlice";
 
 const EditProfile = ({ user }) => {
 
@@ -17,26 +18,32 @@ const EditProfile = ({ user }) => {
   const [photoUrl, setPhotoUrl] = useState(user.photoUrl);
   const [error, setError] = useState("");
   const dispatch = useDispatch();
+  const [showToast, setShowToast] = useState(false);
 
-  const saveProfile = async() => {
-      try{
-        const res = await axios.patch(BASE_URL + "/profile/edit", 
-          {
-            firstName,
-            lastName,
-            photoUrl,
-            age,
-            gender,
-            about,
-          }, 
-          {withCredentials: true}
-        );
-        dispatch(addUser(res?.data?.data))
+  const saveProfile = async () => {
+    try {
+      const res = await axios.patch(BASE_URL + "/profile/edit",
+        {
+          firstName,
+          lastName,
+          photoUrl,
+          age,
+          gender,
+          about,
+          skills: skills.split(",").map(s => s.trim())
+        },
+        { withCredentials: true }
+      );
+      dispatch(addUser(res?.data?.data));
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000)
 
-        
-      } catch(err) {
-          setError(err.message);
-      }
+
+    } catch (err) {
+      setError(err.message);
+    }
   }
 
 
@@ -150,13 +157,30 @@ const EditProfile = ({ user }) => {
             </button>
           </div>
         </div>
-        
-        <UserCard user={{firstName,lastName,age,about,skills,gender, photoUrl}}/>
+
+        <UserCard user={{ firstName, lastName, age, about, skills, gender, photoUrl }} />
+
+
 
 
 
 
       </div>
+
+
+      {showToast && (
+        <div className="toast toast-top toast-center">
+        
+        <div className="alert alert-success">
+          <span>Profile Updated successfully</span>
+        </div>
+      </div>
+     
+      )}
+
+
+
+
 
     </>
   );
