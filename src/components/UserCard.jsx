@@ -8,7 +8,7 @@ const UserCard = ({ user }) => {
             : [];
 
     return (
-        <div className="w-80 bg-black border border-white/20 rounded-3xl overflow-hidden shadow-xl hover:scale-105 transition-transform duration-200">
+        <div className="w-80 mt-6 bg-black border border-white/20 rounded-3xl overflow-hidden shadow-xl hover:scale-105 transition-transform duration-200">
             <div className="relative h-96">
                 <img
                     src={
