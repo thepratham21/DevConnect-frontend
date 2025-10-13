@@ -37,14 +37,14 @@ const Login = () => {
             <div className=" bg-black flex items-center justify-center p-4">
                 <div className="card bg-black border border-white/20 w-96">
                     <div className="card-body p-8">
-                        {/* Title */}
+                        
                         <h2 className="card-title justify-center text-2xl font-bold text-white mb-6">
                             Login
                         </h2>
 
-                        {/* Form */}
+                        
                         <div className="space-y-4">
-                            {/* Email Field */}
+                           
                             <div className="form-control">
                                 <label className="label">
                                     <span className="label-text text-white">Email</span>
@@ -58,7 +58,7 @@ const Login = () => {
                                 />
                             </div>
 
-                            {/* Password Field */}
+                            
                             <div className="form-control">
                                 <label className="label">
                                     <span className="label-text text-white">Password</span>
@@ -75,14 +75,14 @@ const Login = () => {
 
                         <p className='text-red-500'>{error}</p>
 
-                        {/* Forgot password */}
+                        
                         <div className="text-right mt-2">
                             <a href="#" className="text-white/60 hover:text-white text-sm transition-colors duration-200">
                                 Forgot password?
                             </a>
                         </div>
 
-                        {/* Login Button */}
+                        
                         <div className="card-actions justify-center mt-6">
                             <button className="btn btn-primary w-full bg-white text-black hover:bg-white/90 border-none font-semibold" onClick={handleLogin}>
                                 Login
