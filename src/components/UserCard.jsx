@@ -1,11 +1,35 @@
+import axios from "axios";
 import React from "react";
+import { useDispatch } from "react-redux";
+import { addRequests } from "../utils/requestSlice";
+import { BASE_URL } from "../utils/constants";
+import { removeUserFromFeed } from "../utils/feedSlice";
+
 
 const UserCard = ({ user }) => {
+
+    const { _id } = user;
+
     const skillsArray = Array.isArray(user.skills)
         ? user.skills
         : typeof user.skills === "string"
             ? user.skills.split(",").map(s => s.trim())
             : [];
+
+    const dispatch = useDispatch();
+
+    const handleSendRequest = async (status, userId) => {
+        try {
+            const res = await axios.post(BASE_URL + "/request/send/" + status + "/" + userId, {}, {
+                withCredentials: true,
+            });
+
+            dispatch(removeUserFromFeed(userId));
+
+        } catch (err) {
+            console.error("Error sending request:", err);
+        }
+    }
 
     return (
         <div className="w-80 mt-6 bg-black border border-white/20 rounded-3xl overflow-hidden shadow-xl hover:scale-105 transition-transform duration-200">
@@ -55,10 +79,14 @@ const UserCard = ({ user }) => {
                     )}
 
                     <div className="flex gap-4 mt-4">
-                        <button className="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-xl transition-colors">
+                        <button className="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-xl transition-colors"
+                        onClick={() => handleSendRequest("interested", _id)}
+                        >
                             Interested
                         </button>
-                        <button className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-xl transition-colors">
+                        <button className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-xl transition-colors"
+                        onClick={() => handleSendRequest("ignored", _id)}
+                        >
                             Ignore
                         </button>
                     </div>
