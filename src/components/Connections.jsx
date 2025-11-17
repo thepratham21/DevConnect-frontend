@@ -3,10 +3,12 @@ import React, { useEffect } from 'react';
 import { BASE_URL } from '../utils/constants';
 import { useDispatch, useSelector } from 'react-redux';
 import { addConnections } from '../utils/connectionSlice';
+import { useNavigate } from "react-router-dom";
 
 const Connections = () => {
   const connections = useSelector(store => store.connections);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchConnections = async () => {
@@ -39,6 +41,10 @@ const Connections = () => {
     );
   }
 
+  const handleChat = (targetUserId) => {
+    navigate(`/chat/${targetUserId}`);
+  };
+
   return (
     <div className="flex flex-col items-center my-10">
       <h1 className="font-bold text-2xl text-white mb-6">
@@ -65,6 +71,14 @@ const Connections = () => {
                 </p>
               </div>
             </div>
+
+            
+            <button
+              onClick={() => handleChat(conn._id)}
+              className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl transition"
+            >
+              Chat
+            </button>
           </div>
         ))}
       </div>

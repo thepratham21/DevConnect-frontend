@@ -39,11 +39,16 @@ const Body = () => {
 
     return (
         <>
-            <div>
+            <div className="flex flex-col h-screen">
                 <NavBar />
-                <Outlet />
+
+                <div className="flex-1 overflow-y-auto">
+                    <Outlet />
+                </div>
+
                 <Footer />
             </div>
+
 
         </>
     )
