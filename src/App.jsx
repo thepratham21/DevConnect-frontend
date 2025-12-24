@@ -11,20 +11,18 @@ import Requests from "./components/Requests";
 import Premium from "./components/Premium";
 import Payment from "./components/Payment";
 import Chat from "./components/chat";
-
-
+import Community from "./components/Community";
+import UserProfilePage from "./components/UserProfilePage";
 
 function App() {
-
-
   return (
     <>
       <Provider store={appStore}>
         <BrowserRouter basename="/">
           <Routes>
             <Route path="/" element={<Body />}>
-
-              <Route path="/" element={<Feed/>}></Route>
+              <Route path="/" element={<Community />}></Route>
+              <Route path="/feed" element={<Feed />}></Route>
               <Route path="/login" element={<Login />}></Route>
               <Route path="/profile" element={<Profile />}></Route>
               <Route path="/connections" element={<Connections />}></Route>
@@ -32,18 +30,11 @@ function App() {
               <Route path="/premium" element={<Premium />}></Route>
               <Route path="/payment" element={<Payment />}></Route>
               <Route path="/chat/:targetUserId" element={<Chat />}></Route>
-              
-
-
-            </Route>
-
+              <Route path="/user/:userId" element={<UserProfilePage />}></Route>
+              </Route>
           </Routes>
-
         </BrowserRouter>
       </Provider>
-
-
-
     </>
   )
 }
