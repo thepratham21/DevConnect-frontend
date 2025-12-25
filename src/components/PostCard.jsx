@@ -4,7 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
 import CommentSection from "./Commentsection";
-import { Heart, MessageCircle, Trash2, User } from 'lucide-react';
+import { Heart, MessageCircle, Trash2, User, Image as ImageIcon, X } from 'lucide-react';
 import { removePost, updatePostLikes } from "../utils/postSlice";
 
 const PostCard = ({ post }) => {
@@ -16,6 +16,8 @@ const PostCard = ({ post }) => {
     const [commentCount, setCommentCount] = useState(0);
     const [isConnected, setIsConnected] = useState(false);
     const [connectionStatus, setConnectionStatus] = useState(null);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [showImageModal, setShowImageModal] = useState(false);
     
     const user = useSelector(store => store.user);
     const dispatch = useDispatch();
@@ -25,7 +27,11 @@ const PostCard = ({ post }) => {
 
     useEffect(() => {
         fetchCommentCount();
-    }, [post._id, user]);
+        // Check if user has liked this post
+        if (user && post.likes && Array.isArray(post.likes)) {
+            setIsLiked(post.likes.includes(user._id));
+        }
+    }, [post._id, user, post.likes]);
 
     const fetchCommentCount = async () => {
         try {
@@ -39,6 +45,23 @@ const PostCard = ({ post }) => {
         } catch (err) {
             console.error("Error fetching comments:", err);
         }
+    };
+
+    // Helper function to get image URLs from post
+    const getImageUrls = () => {
+        if (!post.images || !Array.isArray(post.images)) return [];
+        
+        // Check if images are objects with url property or simple strings
+        return post.images.map(img => {
+            if (typeof img === 'string') {
+                return img; // It's already a URL string
+            } else if (img && img.url) {
+                return img.url; // It's an object with url property
+            } else if (img && img.secure_url) {
+                return img.secure_url; // Cloudinary secure_url
+            }
+            return null;
+        }).filter(url => url !== null);
     };
 
     const handleUserClick = (userId) => {
@@ -104,7 +127,8 @@ const PostCard = ({ post }) => {
                 dispatch(updatePostLikes({
                     postId: post._id,
                     liked: response.data.liked,
-                    likesCount: newLikeCount
+                    likesCount: newLikeCount,
+                    userId: user._id
                 }));
             }
         } catch (err) {
@@ -128,6 +152,11 @@ const PostCard = ({ post }) => {
             console.error("Error deleting post:", err);
             alert(err.response?.data?.message || "Failed to delete post");
         }
+    };
+
+    const handleImageClick = (imageUrl) => {
+        setSelectedImage(imageUrl);
+        setShowImageModal(true);
     };
 
     const formatDate = (dateString) => {
@@ -163,9 +192,30 @@ const PostCard = ({ post }) => {
     };
 
     const connectButton = getConnectButtonProps();
+    const imageUrls = getImageUrls();
+    const hasImages = imageUrls.length > 0;
 
     return (
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6 backdrop-blur-sm">
+            
+            
+            {showImageModal && selectedImage && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4">
+                    <div className="relative max-w-4xl max-h-[90vh]">
+                        <button
+                            onClick={() => setShowImageModal(false)}
+                            className="absolute -top-10 right-0 text-white hover:text-gray-300 p-2"
+                        >
+                            <X className="w-6 h-6" />
+                        </button>
+                        <img
+                            src={selectedImage}
+                            alt="Full size"
+                            className="max-w-full max-h-[80vh] object-contain rounded-lg"
+                        />
+                    </div>
+                </div>
+            )}
             
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
@@ -237,9 +287,50 @@ const PostCard = ({ post }) => {
             </div>
 
             
+            {hasImages && (
+                <div className="mb-6">
+                    <div className={`grid gap-4 ${
+                        imageUrls.length === 1 ? 'grid-cols-1' : 
+                        imageUrls.length === 2 ? 'grid-cols-2' : 
+                        imageUrls.length === 3 ? 'grid-cols-2 md:grid-cols-3' : 
+                        'grid-cols-2 md:grid-cols-2 lg:grid-cols-4'
+                    }`}>
+                        {imageUrls.map((imageUrl, index) => (
+                            <div 
+                                key={index} 
+                                className="relative overflow-hidden rounded-lg bg-white/5 group cursor-pointer"
+                                onClick={() => handleImageClick(imageUrl)}
+                            >
+                                <img
+                                    src={imageUrl}
+                                    alt={`Post image ${index + 1}`}
+                                    className="w-full h-48 md:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                                    onError={(e) => {
+                                        // If image fails to load, show placeholder
+                                        e.target.onerror = null;
+                                        e.target.src = `https://via.placeholder.com/400x300/1a1a2e/ffffff?text=Image+${index + 1}`;
+                                    }}
+                                />
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                    <ImageIcon className="w-8 h-8 text-white/80" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="mt-2 text-sm text-white/50 flex items-center">
+                        <ImageIcon className="w-4 h-4 mr-1" />
+                        {imageUrls.length} {imageUrls.length === 1 ? 'image' : 'images'}
+                    </div>
+                </div>
+            )}
+
+            
             <div className="flex items-center text-sm text-white/50 mb-4 space-x-6">
                 <span>{likeCount} {likeCount === 1 ? 'like' : 'likes'}</span>
                 <span>{commentCount} {commentCount === 1 ? 'comment' : 'comments'}</span>
+                {hasImages && (
+                    <span>{imageUrls.length} {imageUrls.length === 1 ? 'image' : 'images'}</span>
+                )}
             </div>
 
             
