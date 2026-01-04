@@ -10,9 +10,10 @@ import Connections from "./components/Connections";
 import Requests from "./components/Requests";
 import Premium from "./components/Premium";
 import Payment from "./components/Payment";
-import Chat from "./components/chat";
 import Community from "./components/Community";
 import UserProfilePage from "./components/UserProfilePage";
+import Chat from "./components/Chat";
+
 
 function App() {
   return (
@@ -29,9 +30,10 @@ function App() {
               <Route path="/requests" element={<Requests />}></Route>
               <Route path="/premium" element={<Premium />}></Route>
               <Route path="/payment" element={<Payment />}></Route>
-              <Route path="/chat/:targetUserId" element={<Chat />}></Route>
+              <Route path="/community" element={<Community />}></Route>
               <Route path="/user/:userId" element={<UserProfilePage />}></Route>
-              </Route>
+              <Route path="/chat/:targetUserId" element={<Chat />}></Route>
+            </Route>
           </Routes>
         </BrowserRouter>
       </Provider>

@@ -81,7 +81,12 @@ const UserProfilePage = () => {
             navigate("/login");
             return;
         }
-        navigate(`/chat/${userId}`);
+        navigate(`/chat/${userId}`, { 
+        state: { 
+            targetUserId: userId,
+            userName: `${user.firstName} ${user.lastName}`
+        } 
+    });
     };
 
     if (loading) {

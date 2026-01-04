@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom';
 import { BASE_URL } from '../utils/constants';
 import { removeUser } from '../utils/userSlice';
+import { MessageSquare } from 'lucide-react';
 
 const NavBar = () => {
     const user = useSelector((store) => store.user);
@@ -54,7 +55,10 @@ const NavBar = () => {
                             <li> <Link to={"/connections"}>Connections</Link></li>
                             <li> <Link to={"/requests"}>Requests</Link></li>
                             <li> <Link to={"/premium"}>Premium</Link></li>
-                            
+                            <Link to="/messages" className="btn btn-ghost btn-circle">
+                                <MessageSquare size={20} />
+                            </Link>
+
 
                             <li><a onClick={handleLogout}>Logout</a></li>
                         </ul>
