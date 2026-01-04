@@ -4,49 +4,56 @@ import { createSocketConnection } from "../utils/socket";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import { BASE_URL } from "../utils/constants";
-import { Send, Clock, CheckCheck } from "lucide-react";
+import { Send, User, Check } from "lucide-react";
 
 const Chat = () => {
     const { targetUserId } = useParams();
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
-    const [targetUserName, setTargetUserName] = useState("");
+    const [targetUser, setTargetUser] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
     const user = useSelector((store) => store.user);
     const userId = user?._id;
 
     const fetchChatMessages = async () => {
-        const chat = await axios.get(BASE_URL + "/chat/" + targetUserId, {
-            withCredentials: true,
-        });
+        setIsLoading(true);
+        try {
+            const response = await axios.get(BASE_URL + "/chat/" + targetUserId, {
+                withCredentials: true,
+            });
 
-        console.log(chat.data);
+            console.log("Chat response:", response.data);
 
-        // Get target user name from the chat data
-        if (chat.data.otherUser) {
-            setTargetUserName(`${chat.data.otherUser.firstName} ${chat.data.otherUser.lastName}`);
-        } else if (chat.data.participants) {
-            // Fallback: Find the other participant who is not the current user
-            const otherParticipant = chat.data.participants.find(
-                participant => participant._id !== userId
-            );
-            if (otherParticipant) {
-                setTargetUserName(`${otherParticipant.firstName} ${otherParticipant.lastName}`);
+            if (response.data.success) {
+                // Set target user from the response
+                if (response.data.otherUser) {
+                    setTargetUser(response.data.otherUser);
+                }
+
+                // Transform messages for frontend display
+                const chatMessages = response.data.messages.map((msg) => {
+                    const { senderId, text, createdAt } = msg;
+                    return {
+                        firstName: senderId?.firstName,
+                        lastName: senderId?.lastName,
+                        text,
+                        isOwnMessage: senderId?._id === userId,
+                        timestamp: createdAt,
+                    };
+                });
+                
+                setMessages(chatMessages);
             }
+        } catch (error) {
+            console.error("Error fetching chat messages:", error);
+        } finally {
+            setIsLoading(false);
         }
-
-        const chatMessages = chat?.data?.messages.map((msg) => {
-            const { senderId, text } = msg;
-            return {
-                firstName: senderId?.firstName,
-                lastName: senderId?.lastName,
-                text,
-            };
-        });
-        setMessages(chatMessages);
     };
+
     useEffect(() => {
         fetchChatMessages();
-    }, []);
+    }, [targetUserId]);
 
     useEffect(() => {
         if (!userId) {
@@ -62,7 +69,13 @@ const Chat = () => {
 
         socket.on("messageReceived", ({ firstName, lastName, text }) => {
             console.log(firstName + " :  " + text);
-            setMessages((messages) => [...messages, { firstName, lastName, text }]);
+            setMessages((messages) => [...messages, { 
+                firstName, 
+                lastName, 
+                text,
+                isOwnMessage: false,
+                timestamp: new Date(),
+            }]);
         });
 
         return () => {
@@ -81,6 +94,15 @@ const Chat = () => {
             targetUserId,
             text: newMessage,
         });
+        
+        // Optimistically add message to local state
+        setMessages((prevMessages) => [...prevMessages, { 
+            firstName: user.firstName, 
+            lastName: user.lastName, 
+            text: newMessage,
+            isOwnMessage: true,
+            timestamp: new Date(),
+        }]);
         setNewMessage("");
     };
 
@@ -91,50 +113,54 @@ const Chat = () => {
         }
     };
 
-    const formatTime = () => {
-        return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const formatTime = (timestamp) => {
+        if (!timestamp) return "";
+        const date = new Date(timestamp);
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-[70vh]">
+                <div className="text-center">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                    <p className="mt-2 text-white/50 text-sm">Loading chat...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="max-w-6xl mx-auto p-4 h-[85vh] flex flex-col">
-            {/* Chat Header - Fixed to show target user's name */}
-            <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-t-2xl border border-gray-700 p-4">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
-                            {targetUserName?.charAt(0) || "U"}
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-semibold text-white">
-                                {targetUserName || "Chat"}
-                            </h1>
-                            <p className="text-sm text-gray-400 flex items-center gap-1">
-                                <Clock size={12} />
-                                Online
-                            </p>
-                        </div>
+        <div className="max-w-4xl mx-auto p-4">
+            {/* Chat Header */}
+            <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded-xl">
+                <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center border border-white/20">
+                        {targetUser?.firstName?.charAt(0) || <User className="w-6 h-6 text-white/70" />}
                     </div>
-                    <div className="text-sm text-gray-400">
-                        {messages.length} messages
+                    <div>
+                        <h1 className="text-xl font-semibold text-white">
+                            {targetUser ? `${targetUser.firstName} ${targetUser.lastName}` : "Chat"}
+                        </h1>
+                        <p className="text-white/50 text-sm">Online</p>
                     </div>
                 </div>
             </div>
 
             {/* Messages Container */}
-            <div className="flex-1 bg-gray-900 border-x border-gray-700 overflow-hidden flex flex-col">
-                {/* Messages Area */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-                    {messages.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                            <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mb-4">
-                                <Send size={24} />
-                            </div>
-                            <p className="text-lg">Start a conversation</p>
-                            <p className="text-sm">Send your first message to begin chatting</p>
+            <div className="mb-6 p-4 bg-white/5 border border-white/10 rounded-xl min-h-[60vh] max-h-[60vh] overflow-y-auto">
+                {messages.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-full text-white/50 py-10">
+                        <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-4 border border-white/20">
+                            <Send className="w-6 h-6 text-white/50" />
                         </div>
-                    ) : (
-                        messages.map((msg, index) => {
-                            const isOwnMessage = user.firstName === msg.firstName;
+                        <p className="text-lg mb-1">No messages yet</p>
+                        <p className="text-sm">Send your first message to {targetUser?.firstName || 'start the conversation'}</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {messages.map((msg, index) => {
+                            const isOwnMessage = msg.isOwnMessage;
                             return (
                                 <div
                                     key={index}
@@ -142,63 +168,64 @@ const Chat = () => {
                                 >
                                     <div className={`max-w-[70%] ${isOwnMessage ? "order-2" : "order-1"}`}>
                                         {!isOwnMessage && (
-                                            <div className="flex items-center gap-2 mb-1 ml-1">
-                                                <div className="w-6 h-6 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full text-xs flex items-center justify-center text-white font-medium">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <div className="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center text-white text-xs border border-white/20">
                                                     {msg.firstName?.charAt(0)}
                                                 </div>
-                                                <span className="text-sm font-medium text-gray-300">
+                                                <span className="text-sm font-medium text-white/80">
                                                     {msg.firstName} {msg.lastName}
                                                 </span>
                                             </div>
                                         )}
                                         <div
-                                            className={`rounded-2xl px-4 py-3 ${isOwnMessage
-                                                    ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-br-none"
-                                                    : "bg-gray-800 text-gray-100 rounded-bl-none"
+                                            className={`rounded-xl px-4 py-3 ${isOwnMessage
+                                                    ? "bg-blue-600 text-white rounded-br-sm"
+                                                    : "bg-white/10 text-white rounded-bl-sm"
                                                 }`}
                                         >
                                             <p className="whitespace-pre-wrap break-words">{msg.text}</p>
                                         </div>
-                                        <div className={`flex items-center gap-2 mt-1 text-xs ${isOwnMessage ? "justify-end" : "justify-start"}`}>
-                                            <span className="text-gray-500">{formatTime()}</span>
+                                        <div className={`flex items-center gap-1 mt-1 text-xs ${isOwnMessage ? "justify-end" : "justify-start"}`}>
+                                            <span className="text-white/50">{formatTime(msg.timestamp)}</span>
                                             {isOwnMessage && (
-                                                <CheckCheck size={12} className="text-blue-400" />
+                                                <Check className="w-3 h-3 text-blue-300" />
                                             )}
                                         </div>
                                     </div>
                                 </div>
                             );
-                        })
-                    )}
-                </div>
-
-                {/* Input Area */}
-                <div className="border-t border-gray-700 p-4 bg-gray-900">
-                    <div className="flex items-center gap-3">
-                        <div className="flex-1 relative">
-                            <input
-                                value={newMessage}
-                                onChange={(e) => setNewMessage(e.target.value)}
-                                onKeyPress={handleKeyPress}
-                                placeholder={`Message ${targetUserName.split(' ')[0] || ''}`}
-                                className="w-full bg-gray-800 border border-gray-700 text-white rounded-xl py-3 px-4 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500"
-                            />
-                            <button
-                                onClick={sendMessage}
-                                disabled={!newMessage.trim()}
-                                className={`absolute right-2 top-1/2 transform -translate-y-1/2 p-2 rounded-full ${newMessage.trim()
-                                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700"
-                                        : "bg-gray-700 text-gray-500 cursor-not-allowed"
-                                    } transition-all duration-200`}
-                            >
-                                <Send size={20} />
-                            </button>
-                        </div>
+                        })}
                     </div>
-                    <p className="text-xs text-gray-500 text-center mt-3">
-                        Press Enter to send • Shift + Enter for new line
-                    </p>
+                )}
+            </div>
+
+            {/* Input Area */}
+            <div className="p-4 bg-white/5 border border-white/10 rounded-xl">
+                <div className="flex items-center gap-3">
+                    <div className="flex-1">
+                        <input
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
+                            onKeyPress={handleKeyPress}
+                            placeholder={`Message ${targetUser?.firstName || '...'}`}
+                            className="w-full bg-white/5 border border-white/10 text-white rounded-lg py-3 px-4 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 placeholder-white/30"
+                        />
+                    </div>
+                    <button
+                        onClick={sendMessage}
+                        disabled={!newMessage.trim()}
+                        className={`px-4 py-3 rounded-lg flex items-center gap-2 ${newMessage.trim()
+                                ? "bg-blue-600 hover:bg-blue-700 text-white"
+                                : "bg-white/10 text-white/50 cursor-not-allowed"
+                            } transition-colors`}
+                    >
+                        <Send className="w-4 h-4" />
+                        Send
+                    </button>
                 </div>
+                <p className="text-white/50 text-xs text-center mt-3">
+                    Press Enter to send • Shift + Enter for new line
+                </p>
             </div>
         </div>
     );

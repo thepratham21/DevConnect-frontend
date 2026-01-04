@@ -13,7 +13,7 @@ import Payment from "./components/Payment";
 import Community from "./components/Community";
 import UserProfilePage from "./components/UserProfilePage";
 import Chat from "./components/Chat";
-
+import Inbox from "./components/Inbox";
 
 function App() {
   return (
@@ -33,6 +33,7 @@ function App() {
               <Route path="/community" element={<Community />}></Route>
               <Route path="/user/:userId" element={<UserProfilePage />}></Route>
               <Route path="/chat/:targetUserId" element={<Chat />}></Route>
+              <Route path="/inbox" element={<Inbox />}></Route>
             </Route>
           </Routes>
         </BrowserRouter>

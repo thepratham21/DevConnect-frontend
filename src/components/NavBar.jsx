@@ -55,9 +55,7 @@ const NavBar = () => {
                             <li> <Link to={"/connections"}>Connections</Link></li>
                             <li> <Link to={"/requests"}>Requests</Link></li>
                             <li> <Link to={"/premium"}>Premium</Link></li>
-                            <Link to="/messages" className="btn btn-ghost btn-circle">
-                                <MessageSquare size={20} />
-                            </Link>
+                            <li> <Link to={"/inbox"}>Inbox</Link></li>
 
 
                             <li><a onClick={handleLogout}>Logout</a></li>
