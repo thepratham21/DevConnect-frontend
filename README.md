@@ -1,3 +1,11 @@
+![React](https://img.shields.io/badge/React-17.0.2-blue?logo=react&logoColor=white)
+![Redux](https://img.shields.io/badge/Redux-Toolkit-purple?logo=redux&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.3.3-skyblue?logo=tailwind-css&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-4.4.0-brightgreen?logo=vite&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-blue)
+![Status](https://img.shields.io/badge/Status-In%20Development-yellow)
+
+
 # DevConnect Frontend 🚀
 
 Frontend application for **DevConnect**, a developer-focused social networking platform that enables users to share posts, interact with the community, and connect with other developers.
