@@ -40,6 +40,10 @@ Built with ❤️ by a developer passionate about creating scalable, production-
 
 ⭐ If you find this project useful, consider starring the repository!
 
+---
+
+🔗 Backend Repo: https://github.com/thepratham21/DevConnect-backend-V2
+
 📄 License
 This project is licensed under the MIT License.
 
